@@ -311,12 +311,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      persistentFooterButtons: [
-        ElevatedButton(
-          onPressed: showNotification,
-          child: const Text('Test Notification'),
-        ),
-      ],
+      // persistentFooterButtons: [
+      //   ElevatedButton(
+      //     onPressed: _sendDummyNotification,
+      //     child: const Text('Test Notification'),
+      //   ),
+      // ],
     );
   }
 
