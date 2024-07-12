@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/event_echo_db
+    username: event_echo_user
+    password: secret
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+#  flyway:
+#    url: jdbc:postgresql://127.0.0.1/event_echo_db
+#    user: event_echo_user
+#    password: secret
+#    enabled: false
+#    locations: classpath:db/migration
+#    baseline-on-migrate: true
+  application:
+    name: event-echo
+
+server:
+  port: 8080
