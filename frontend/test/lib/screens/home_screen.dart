@@ -50,10 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
     // Request notification permissions
-    if (await Permission.notification.isDenied) {
-      PermissionStatus status = await Permission.notification.request();
-      print('Notification permission status: $status');
-    }
+    // if (await Permission.notification.isDenied) {
+    //   PermissionStatus status = await Permission.notification.request();
+    //   print('Notification permission status: $status');
+    // }
   }
 
   void _addEvent() async {
