@@ -161,6 +161,7 @@ Future<List<Event>> fetchEvents(String uid) async {
   // Replace 'localhost' with the appropriate IP address or special address
   final uri = Uri.parse(
       'http://10.0.2.2:8080/api/events/uid/$uid'); // For Android emulator
+  // final uri = Uri.parse('http://127.0.0.1:64468/api/events/uid/$uid'); // For IOS emulator
   // final uri = Uri.parse('http://127.0.0.1:8080/api/events/uid/123'); // For iOS simulator or physical device if the backend is running locally
 
   final response = await http.get(uri);

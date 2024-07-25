@@ -29,8 +29,18 @@ class EventCard extends StatelessWidget {
     final formattedDate = _getFormattedDate(event.expiryDate);
     final dateParts = formattedDate.split(' ');
 
+    // Responsive Sizing
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double fontSizeLarge = screenWidth * 0.05;
+    double fontSizeMedium = screenWidth * 0.035;
+    double fontSizeSmall = screenWidth * 0.03;
+    double paddingHorizontal = screenWidth * 0.05;
+    double paddingVertical = screenHeight * 0.008;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.symmetric(
+          horizontal: paddingHorizontal, vertical: paddingVertical),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -54,23 +64,25 @@ class EventCard extends StatelessWidget {
                     dateParts[0], // Day
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
-                      fontSize: 24,
+                      fontSize: fontSizeLarge,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     dateParts[1], // Abbreviated month
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style:
+                        TextStyle(color: Colors.grey, fontSize: fontSizeMedium),
                   ),
                   Text(
                     dateParts[2], // Year
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style:
+                        TextStyle(color: Colors.grey, fontSize: fontSizeMedium),
                   ),
                 ],
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: screenWidth * 0.025),
             ] else ...[
-              const SizedBox(width: 44),
+              SizedBox(width: screenWidth * 0.11),
             ],
             Expanded(
               child: Card(
@@ -78,7 +90,7 @@ class EventCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(screenWidth * 0.025),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -87,15 +99,15 @@ class EventCard extends StatelessWidget {
                           Text(
                             determineEmoji(
                                 event.expiryDate.toString(), event.category),
-                            style: const TextStyle(fontSize: 20),
+                            style: TextStyle(fontSize: fontSizeLarge),
                           ),
-                          const SizedBox(width: 15),
+                          SizedBox(width: screenWidth * 0.04),
                           Flexible(
                             child: Text(
                               event.title,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                              style: TextStyle(
+                                fontSize: fontSizeLarge,
+                                fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -103,16 +115,19 @@ class EventCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 1),
+                      SizedBox(height: screenHeight * 0.001),
                       Container(
                         color: Theme.of(context)
                             .colorScheme
                             .primary
                             .withOpacity(0.2),
-                        height: 1,
+                        height: screenHeight * 0.0015,
                       ),
-                      const SizedBox(height: 5),
-                      Text(event.content),
+                      SizedBox(height: screenHeight * 0.006),
+                      Text(
+                        event.content,
+                        style: TextStyle(fontSize: fontSizeSmall),
+                      ),
                     ],
                   ),
                 ),

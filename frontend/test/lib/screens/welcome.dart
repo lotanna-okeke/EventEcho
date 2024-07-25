@@ -66,12 +66,12 @@ class WelcomeScreen extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal: buttonWidth * 0.1,
-                        vertical: buttonHeight * 0.3),
+                        vertical: buttonHeight * 0.15),
                     child: Text(
                       'Get Started',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: fontSizeTitle * 0.5,
+                        fontSize: fontSizeTitle * 0.6,
                         fontWeight: FontWeight.w400,
                       ),
                     ),

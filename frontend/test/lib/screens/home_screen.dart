@@ -1,9 +1,10 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:test/data/data.dart';
-import 'package:test/data/functions.dart';
 import 'package:test/models/event.dart';
 import 'package:test/screens/add_event.dart';
 import 'package:test/widgets/app_drawer.dart';
@@ -12,7 +13,7 @@ import 'package:test/widgets/event_seach.dart';
 import 'package:test/widgets/noEntry.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 import 'calendar_screen.dart';
 
@@ -29,31 +30,68 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentPage = 0; // Current page index
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  String? username;
 
   @override
   void initState() {
     super.initState();
     uid = FirebaseAuth.instance.currentUser!.uid;
+    fetchUserName(uid);
+
     tz.initializeTimeZones();
-    // tz.setLocalLocation(tz.getLocation('Nigeria/Lagos'));
     _initializeNotifications();
     diaryEntriesFuture = fetchEvents(uid);
   }
 
   void _initializeNotifications() async {
+    // Android settings
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    // iOS settings
+    final DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      onDidReceiveLocalNotification:
+          (int id, String? title, String? body, String? payload) async {
+        // Handle the received notification here (optional)
+      },
+    );
+
+    // Combine both settings
     final InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
 
+    // Initialize the plugin
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
-    // Request notification permissions
-    // if (await Permission.notification.isDenied) {
-    //   PermissionStatus status = await Permission.notification.request();
-    //   print('Notification permission status: $status');
-    // }
+  Future<void> fetchUserName(String uid) async {
+    final url = Uri.parse('http://10.0.2.2:8080/api/users/$uid');
+
+    try {
+      final response = await http.get(url);
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        setState(() {
+          username = data['name'];
+        });
+        print(username);
+      } else {
+        throw Exception('Failed to load username');
+      }
+    } catch (e) {
+      print('Error: $e');
+      return;
+    }
   }
 
   void _addEvent() async {
@@ -64,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 uid: uid,
               )),
     );
+    // showNotification();
     setState(() {
       diaryEntriesFuture = fetchEvents(uid);
     });
@@ -108,17 +147,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double fontSizeTitle = screenWidth * 0.05;
+    double paddingValue = screenWidth * 0.04;
     String currentDay = DateFormat('d').format(DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Event Echo',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 24,
+            fontSize: fontSizeTitle,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -161,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               } else if (snapshot.hasData) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: paddingValue),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -186,12 +230,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Icon(Icons.calendar_today,
                                 color: Colors.black),
                             Positioned(
-                              top: 8,
+                              top: screenHeight * 0.01,
                               child: Text(
                                 currentDay,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 12,
+                                  fontSize: fontSizeTitle * 0.5,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -209,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(username: username),
       body: FutureBuilder<List<Event>>(
         future: diaryEntriesFuture,
         builder: (context, snapshot) {
@@ -270,21 +314,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_currentPage > 0)
                       ElevatedButton(
                         onPressed: _prevPage,
-                        child: const Text(
+                        child: Text(
                           '<',
                           style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
+                              fontSize: fontSizeTitle * 0.8,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
-                    const SizedBox(width: 20),
+                    SizedBox(width: paddingValue),
                     if ((_currentPage + 1) * _itemsPerPage <
                         diaryEntries.length)
                       ElevatedButton(
                         onPressed: () => _nextPage(diaryEntries),
-                        child: const Text(
+                        child: Text(
                           '>',
                           style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
+                              fontSize: fontSizeTitle * 0.8,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                   ],
@@ -299,24 +345,19 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addEvent,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        icon: const Icon(
+        icon: Icon(
           Icons.add_alert,
           color: Colors.white,
+          size: fontSizeTitle,
         ),
-        label: const Text(
+        label: Text(
           'Add',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: fontSizeTitle * 0.8,
           ),
         ),
       ),
-      // persistentFooterButtons: [
-      //   ElevatedButton(
-      //     onPressed: _sendDummyNotification,
-      //     child: const Text('Test Notification'),
-      //   ),
-      // ],
     );
   }
 
@@ -415,8 +456,8 @@ class _HomeScreenState extends State<HomeScreen> {
         NotificationDetails(android: androidChannel, iOS: iosChannel);
     await flutterLocalNotificationsPlugin.show(
       0,
-      "Test title",
-      "Test body",
+      "Defense",
+      "Project Defense",
       platformChannel,
       payload: "New payload",
     );

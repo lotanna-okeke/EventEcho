@@ -9,12 +9,8 @@ class TutorialScreen extends StatefulWidget {
   _TutorialScreenState createState() => _TutorialScreenState();
 }
 
-class _TutorialScreenState extends State<TutorialScreen> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
+class _TutorialScreenState extends State<TutorialScreen>
+    with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +46,9 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     ),
                     Container(
                       margin: EdgeInsets.only(
-                          left: paddingValue, top: paddingValue),
+                        left: paddingValue * 2,
+                        top: paddingValue * 2,
+                      ),
                       alignment: Alignment.bottomRight,
                       width: imageWidth,
                       height: height * 0.2,
@@ -63,8 +61,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   children: [
                     Container(
                       margin: EdgeInsets.only(
-                          right: paddingValue,
-                          top: paddingValue,
+                          right: paddingValue * 4,
+                          top: paddingValue * 2,
                           left: paddingValue),
                       alignment: Alignment.bottomRight,
                       width: imageWidth,
@@ -83,7 +81,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   alignment: Alignment.centerLeft,
                   padding: EdgeInsets.only(
                       top: paddingValue,
-                      left: paddingValue * 2,
+                      left: paddingValue * 1.5,
                       bottom: paddingValue * 2),
                   child: const AnimatedOpacity(
                     opacity: 1.0,
@@ -111,12 +109,12 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: width * 0.15, vertical: height * 0.02),
+                        horizontal: width * 0.05, vertical: height * 0.01),
                     child: Text(
                       'Next',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: fontSizeTitle * 0.6,
+                        fontSize: fontSizeTitle * 0.8,
                         fontWeight: FontWeight.w400,
                       ),
                     ),

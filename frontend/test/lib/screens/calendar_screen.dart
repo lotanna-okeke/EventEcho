@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
-import 'package:test/data/functions.dart';
 import 'package:test/models/event.dart';
-import 'package:test/screens/add_event.dart';
 import 'package:test/widgets/event_card.dart';
 import 'package:test/widgets/noEntry.dart'; // Import your EventCard widget
 
@@ -78,21 +75,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive Sizing
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double fontSizeTitle = screenWidth * 0.06;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon:
+              Icon(Icons.arrow_back, color: Colors.black, size: fontSizeTitle),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           'Calendar View',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 24,
+            fontSize: fontSizeTitle,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -108,7 +111,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
-              titleTextStyle: TextStyle(fontSize: 24),
+              titleTextStyle: TextStyle(fontSize: fontSizeTitle),
             ),
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
@@ -155,15 +158,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: widget.onAdd,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        icon: const Icon(
+        icon: Icon(
           Icons.add_alert,
           color: Colors.white,
+          size: fontSizeTitle * 0.7,
         ),
-        label: const Text(
+        label: Text(
           'Add',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: fontSizeTitle * 0.7,
           ),
         ),
       ),

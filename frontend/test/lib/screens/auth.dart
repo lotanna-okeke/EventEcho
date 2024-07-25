@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:test/models/user.dart';
 import 'package:test/screens/home_screen.dart';
 import 'package:test/widgets/auth_title_container.dart';
+import 'package:http/http.dart' as http;
 
 final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
@@ -29,12 +33,35 @@ class _AuthScreenState extends State<AuthScreen> {
     FirebaseAuth.instance.signOut();
   }
 
+  String? _emailValidator(String? value) {
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (value == null || value.trim().isEmpty) {
+      return "Please enter a valid email.";
+    } else if (!emailRegex.hasMatch(value.trim())) {
+      return "Please enter a valid email.";
+    }
+    return null;
+  }
+
   void _submit() async {
     final isValid = _formKey.currentState!.validate();
     if (!isValid) {
       return;
     }
+
     _formKey.currentState!.save();
+
+    if ((_enteredConfirmPassword != _enteredPassword) && !_isLogin) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Center(child: Text("Confirm password doesn't match password")),
+        ),
+      );
+      return;
+    }
 
     try {
       setState(() {
@@ -44,11 +71,67 @@ class _AuthScreenState extends State<AuthScreen> {
         final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
             email: _enteredEmail, password: _enteredPassword);
         print("User signed in: ${userCredential.user!.email}");
+        // UserClass aUser = UserClass(id: id, name: name, email: email, password: password, phoneNumber: phoneNumber)
       } else {
         final userCredentials =
             await _firebaseAuth.createUserWithEmailAndPassword(
                 email: _enteredEmail, password: _enteredPassword);
-        print("User signed up: ${userCredentials.user!.email}");
+
+        // created a user in the database
+        var userCred = userCredentials.user!;
+        UserClass aUser = UserClass(
+            id: userCred.uid,
+            name: _enteredName!,
+            email: _enteredEmail,
+            password: _enteredPassword,
+            phoneNumber: _enteredPhoneNumber!);
+
+        final url = Uri.parse("http://10.0.2.2:8080/api/users");
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            "id": aUser.id,
+            "name": aUser.name,
+            "phoneNumber": aUser.phoneNumber,
+            "email": aUser.email,
+            "password": aUser.password,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          // Handle successful response
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Created'),
+              content: Text('${response.body} : ${aUser.email} '),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text(
+                    'Okay',
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.body),
+            ),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          // Handle error response
+        }
+
+        print("User is: ${userCredentials.user!.uid}");
       }
 
       Navigator.pushReplacement(
@@ -68,8 +151,8 @@ class _AuthScreenState extends State<AuthScreen> {
           errorMessage =
               "The email address is already in use by another account.";
           break;
-        case 'invalid-email':
-          errorMessage = "The email address is not valid.";
+        case 'invalid-credential':
+          errorMessage = "Invalid email or password";
           break;
         case 'operation-not-allowed':
           errorMessage = "Operation not allowed. Please contact support.";
@@ -80,12 +163,6 @@ class _AuthScreenState extends State<AuthScreen> {
         case 'user-disabled':
           errorMessage = "The user account has been disabled.";
           break;
-        case 'user-not-found':
-          errorMessage = "No user found with this email.";
-          break;
-        case 'wrong-password':
-          errorMessage = "Incorrect password.";
-          break;
         default:
           errorMessage = error.message ?? "Authentication failed.";
           break;
@@ -94,7 +171,7 @@ class _AuthScreenState extends State<AuthScreen> {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(errorMessage),
+          content: Center(child: Text(errorMessage)),
         ),
       );
       setState(() {
@@ -133,7 +210,13 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: Image.asset('assets/images/Logo.png'),
                       ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: paddingValue),
+                      padding: _isLogin
+                          ? EdgeInsets.symmetric(horizontal: paddingValue)
+                          : EdgeInsets.only(
+                              top: paddingValue,
+                              left: paddingValue,
+                              right: paddingValue,
+                            ),
                       child: Text(
                         _isLogin ? "Event Echo" : 'Sign up',
                         style: TextStyle(
@@ -144,7 +227,9 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(bottom: paddingValue),
+                      padding: _isLogin
+                          ? EdgeInsets.only(bottom: paddingValue / 1.2)
+                          : EdgeInsets.only(bottom: paddingValue / 3),
                       child: Text(
                         _isLogin
                             ? "Echoing Moments, Mastering Time"
@@ -170,7 +255,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: paddingValue,
-                              vertical: paddingValue / 2),
+                              vertical: paddingValue / 2 / 5),
                           child: TextFormField(
                             style: TextStyle(fontSize: fontSizeTitle * 0.4),
                             decoration: InputDecoration(
@@ -213,7 +298,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: paddingValue,
-                              vertical: paddingValue / 2),
+                              vertical: paddingValue / 2 / 5),
                           child: TextFormField(
                             style: TextStyle(fontSize: fontSizeTitle * 0.4),
                             decoration: InputDecoration(
@@ -254,7 +339,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Padding(
                         padding: EdgeInsets.symmetric(
                             horizontal: paddingValue,
-                            vertical: paddingValue / 2),
+                            vertical: paddingValue / 2 / 5),
                         child: TextFormField(
                           style: TextStyle(fontSize: fontSizeTitle * 0.4),
                           decoration: InputDecoration(
@@ -270,14 +355,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           keyboardType: TextInputType.emailAddress,
                           autocorrect: false,
                           textCapitalization: TextCapitalization.none,
-                          validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty ||
-                                !value.contains('@')) {
-                              return "Please enter a valid email.";
-                            }
-                            return null;
-                          },
+                          validator: _emailValidator,
                           onSaved: (value) {
                             _enteredEmail = value!;
                           },
@@ -298,7 +376,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Padding(
                         padding: EdgeInsets.symmetric(
                             horizontal: paddingValue,
-                            vertical: paddingValue / 2),
+                            vertical: paddingValue / 2 / 5),
                         child: TextFormField(
                           style: TextStyle(fontSize: fontSizeTitle * 0.4),
                           decoration: InputDecoration(
@@ -350,7 +428,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         child: Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: paddingValue,
-                              vertical: paddingValue / 2),
+                              vertical: paddingValue / 2 / 5),
                           child: TextFormField(
                             style: TextStyle(fontSize: fontSizeTitle * 0.4),
                             decoration: InputDecoration(
@@ -374,6 +452,12 @@ class _AuthScreenState extends State<AuthScreen> {
                               ),
                             ),
                             obscureText: _obscureText,
+                            validator: (value) {
+                              if (value == null || value.trim().length < 8) {
+                                return "Must be at least 8 characters long";
+                              }
+                              return null;
+                            },
                             onSaved: (value) {
                               _enteredConfirmPassword = value!;
                             },
@@ -453,7 +537,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         )
                       ],
                     ),
-                    SizedBox(height: paddingValue),
+                    SizedBox(height: paddingValue / 5),
                     if (_isLogin)
                       TextButton(
                         onPressed: () {},

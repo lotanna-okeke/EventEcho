@@ -115,7 +115,7 @@ class _EditEventPageState extends State<EditEventPage> {
                       ),
                       TextFormField(
                         controller: _contentController,
-                        decoration: InputDecoration(labelText: 'Content'),
+                        decoration: InputDecoration(labelText: 'Description'),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter content';

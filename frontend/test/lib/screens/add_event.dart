@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:intl/intl.dart';
 import 'package:test/models/event.dart';
 
@@ -78,7 +77,7 @@ class _AddEventPageState extends State<AddEventPage> {
       setState(() {
         _renewalDays = json.decode(response.body);
       });
-      print(_renewalDays);
+      // print(_renewalDays);
     } else {
       throw Exception('Failed to load categories');
     }
@@ -155,7 +154,7 @@ class _AddEventPageState extends State<AddEventPage> {
 
     _fetchRenewlDays(_selectedCategoryType, _selectedTitle);
 
-    print(_renewalDays);
+    // print(_renewalDays);
 
     // Create an Event object
     Event event = Event(
@@ -172,7 +171,7 @@ class _AddEventPageState extends State<AddEventPage> {
       reminderTypes: [], // Add reminder types if needed
     );
 
-    print(event.recurring);
+    // print(event.recurring);
 
     setState(() {
       _isLoading = true;
@@ -197,7 +196,7 @@ class _AddEventPageState extends State<AddEventPage> {
       }),
     );
 
-    print(response.statusCode);
+    // print(response.statusCode);
 
     if (response.statusCode == 200) {
       Navigator.pop(context);
@@ -213,9 +212,8 @@ class _AddEventPageState extends State<AddEventPage> {
               onPressed: () {
                 Navigator.pop(ctx);
               },
-              child: Text(
+              child: const Text(
                 'Okay',
-                // style: TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -237,26 +235,36 @@ class _AddEventPageState extends State<AddEventPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive Sizing
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double fontSizeTitle = screenWidth * 0.05;
+    double fontSizeLabel = screenWidth * 0.04;
+    double padding = screenWidth * 0.04;
+    double spacing = screenHeight * 0.02;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Event'),
+        title: Text('Add Event', style: TextStyle(fontSize: fontSizeTitle)),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(padding),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Categories:',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        fontSize: fontSizeLabel, fontWeight: FontWeight.bold)),
+                SizedBox(height: spacing),
                 Wrap(
-                  spacing: 8.0,
+                  spacing: spacing,
                   children: _categoryTypes.map((type) {
                     return ChoiceChip(
-                      label: Text(type),
+                      label:
+                          Text(type, style: TextStyle(fontSize: fontSizeLabel)),
                       selected: _selectedCategoryType == type,
                       onSelected: (selected) {
                         if (selected) {
@@ -267,14 +275,15 @@ class _AddEventPageState extends State<AddEventPage> {
                   }).toList(),
                 ),
                 if (_selectedCategoryType == 'Certificate') ...[
-                  SizedBox(height: 16.0),
+                  SizedBox(height: spacing),
                   Wrap(
-                    spacing: 8.0,
+                    spacing: spacing,
                     children: _categories
                         .where((category) => category['type'] == 'Certificate')
                         .map((certificate) {
                       return ChoiceChip(
-                        label: Text(certificate['title']),
+                        label: Text(certificate['title'],
+                            style: TextStyle(fontSize: fontSizeLabel)),
                         selected: _selectedTitle == certificate['title'],
                         onSelected: (selected) {
                           if (selected) {
@@ -287,12 +296,13 @@ class _AddEventPageState extends State<AddEventPage> {
                   ),
                 ],
                 if (_expiryYears.isNotEmpty) ...[
-                  SizedBox(height: 16.0),
+                  SizedBox(height: spacing),
                   Wrap(
-                    spacing: 8.0,
+                    spacing: spacing,
                     children: _expiryYears.map((year) {
                       return ChoiceChip(
-                        label: Text('$year yrs'),
+                        label: Text('$year yrs',
+                            style: TextStyle(fontSize: fontSizeLabel)),
                         selected: _selectedExpiryYear == year,
                         onSelected: (selected) {
                           if (selected) {
@@ -304,18 +314,20 @@ class _AddEventPageState extends State<AddEventPage> {
                   ),
                 ],
                 if (_isInvalid) ...[
-                  const SizedBox(height: 16.0),
+                  SizedBox(height: spacing),
                   Text(
                     "Select a certificate and the number of years",
-                    style: TextStyle(color: Colors.redAccent),
+                    style: TextStyle(
+                        color: Colors.redAccent, fontSize: fontSizeLabel),
                   ),
                 ],
-                const SizedBox(height: 16.0),
+                SizedBox(height: spacing),
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Title',
                     hintText: 'e.g. Driver\'s License',
+                    labelStyle: TextStyle(fontSize: fontSizeLabel),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -326,13 +338,15 @@ class _AddEventPageState extends State<AddEventPage> {
                   onSaved: (value) {
                     _enteredTitle = value!;
                   },
+                  style: TextStyle(fontSize: fontSizeLabel),
                 ),
-                const SizedBox(height: 16.0),
+                SizedBox(height: spacing),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Description',
                     hintText: 'e.g. Renew driver\'s License',
+                    labelStyle: TextStyle(fontSize: fontSizeLabel),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -343,18 +357,23 @@ class _AddEventPageState extends State<AddEventPage> {
                   onSaved: (value) {
                     _enteredDescription = value!;
                   },
+                  style: TextStyle(fontSize: fontSizeLabel),
                 ),
-                const SizedBox(height: 16.0),
+                SizedBox(height: spacing),
                 Row(
                   children: [
-                    Text(_selectedCategoryType == "Certificate"
-                        ? 'Issued Date:'
-                        : 'Date'),
-                    const SizedBox(width: 16.0),
+                    Text(
+                      _selectedCategoryType == "Certificate"
+                          ? 'Issued Date:'
+                          : 'Date',
+                      style: TextStyle(fontSize: fontSizeLabel),
+                    ),
+                    SizedBox(width: spacing),
                     TextButton(
                       onPressed: () => _selectDate(context),
                       child: Text(
-                          DateFormat('dd - MM - yyyy').format(_selectedDate)),
+                          DateFormat('dd - MM - yyyy').format(_selectedDate),
+                          style: TextStyle(fontSize: fontSizeLabel)),
                     ),
                   ],
                 ),
@@ -368,15 +387,16 @@ class _AddEventPageState extends State<AddEventPage> {
           : FloatingActionButton.extended(
               onPressed: _onSubmit,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              icon: const Icon(
+              icon: Icon(
                 Icons.add_alert,
                 color: Colors.white,
+                size: fontSizeLabel,
               ),
-              label: const Text(
+              label: Text(
                 'Add',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 15,
+                  fontSize: fontSizeLabel,
                 ),
               ),
             ),

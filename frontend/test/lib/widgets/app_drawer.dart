@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:test/screens/auth.dart';
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  const AppDrawer({super.key, this.username});
+
+  final String? username;
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +16,7 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
+            margin: EdgeInsets.only(bottom: 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -24,6 +27,8 @@ class AppDrawer extends StatelessWidget {
                     fit: BoxFit.fitHeight,
                   ),
                 ),
+                SizedBox(height: 10),
+                Text(username ?? "User"),
               ],
             ),
           ),
