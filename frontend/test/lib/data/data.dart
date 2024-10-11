@@ -170,6 +170,7 @@ Future<List<Event>> fetchEvents(String uid) async {
 
   if (response.statusCode == 200) {
     List<Event> events = [];
+
     List<dynamic> jsonList = json.decode(response.body);
 
     jsonList.forEach((json) {
